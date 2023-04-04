@@ -1,0 +1,2 @@
+{:paths ["src"]
+ :deps {your-org/your-project {:local/root "."}}}

@@ -1,0 +1,7 @@
+my-data.edn
+sys.properties
+.cpcache/*
+.clj-kondo/*
+.idea/*
+.nrepl-port
+bird_bot.iml
