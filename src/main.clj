@@ -102,8 +102,17 @@
 
 (defn telegram-fetcher-data!
   [{:keys [telegram-log]}]
-  (let [resp (.send (HttpClient/newHttpClient)
-                    (-> (str "https://api.telegram.org/" "bot" (:token sys) "/getUpdates")
+  (let [offset-num (some->> @telegram-log
+                            last
+                            :update_id)
+        resp (.send (HttpClient/newHttpClient)
+                    (-> (str "https:"
+                             "//api.telegram.org"
+                             "/bot"
+                             (:token sys)
+                             "/getUpdates"
+                             (when offset-num
+                               (str "?offset=" offset-num)))
                         (URI/create)
                         (HttpRequest/newBuilder)
                         (.build))
@@ -112,14 +121,8 @@
                   (->> (json/read-str (.body resp)
                                       :key-fn keyword)
                        :result
-                       (filter #(-> %
-                                    (get-in [:message
-                                             :chat
-                                             :id])
-                                    (= -1001146934165)))
-                       (remove #(-> % :update_id (= 624742737)))
                        (into #{})))]
-    (swap! telegram-log set/union tg-data)))
+    tg-data))
 
 (defn telegram-sender-data!
   [{:keys [telegram-log
@@ -163,25 +166,23 @@
 
 #_(telegram-fetcher-data! sys)
 #_(dump-local-data! sys)
-#_(->> sys
-       :telegram-log
-       deref
-       (sort-by :update_id))
+#_(->>  (telegram-fetcher-data! sys)
+        (sort-by :update_id))
 
-(defn merge-data! [sys]
+(defn read-backup-data! [sys]
   (let [{:keys [backup-path
                 telegram-log]} sys]
     (if (.exists (File. "my-data.edn"))
-      (swap! telegram-log
-             set/union
-             (into #{}
-                   (edn/read-string (slurp backup-path))))
-      telegram-log)))
+      (into #{}
+            (edn/read-string (slurp backup-path)))
+      #{})))
 
 (defn -main
   []
-  (telegram-fetcher-data! sys)
-  (merge-data! sys)
+  (->> (telegram-fetcher-data! sys)
+       (swap! (:telegram-log sys)
+              set/union
+              (read-backup-data! sys)))
   (telegram-sender-data! sys)
   (dump-local-data! sys))
 
