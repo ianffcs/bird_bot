@@ -4,7 +4,7 @@
             [clojure.java.io :as jio]
             [clojure.set :as set]
             [clojure.edn :as edn])
-  (:import (java.io Reader Writer)
+  (:import (java.io File Reader Writer)
            (java.net.http HttpClient
                           HttpRequest
                           HttpRequest$BodyPublishers
@@ -171,10 +171,12 @@
 (defn merge-data! [sys]
   (let [{:keys [backup-path
                 telegram-log]} sys]
-    (swap! telegram-log
-           set/union
-           (into #{}
-                 (edn/read-string (slurp backup-path))))))
+    (if (.exists (File. "my-data.edn"))
+      (swap! telegram-log
+             set/union
+             (into #{}
+                   (edn/read-string (slurp backup-path))))
+      telegram-log)))
 
 (defn -main
   []
