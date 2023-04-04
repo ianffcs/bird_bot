@@ -103,8 +103,10 @@
 (defn telegram-fetcher-data!
   [{:keys [telegram-log]}]
   (let [offset-num (some->> @telegram-log
+                            (sort-by :update_id)
                             last
-                            :update_id)
+                            :update_id
+                            inc)
         resp (.send (HttpClient/newHttpClient)
                     (-> (str "https:"
                              "//api.telegram.org"
