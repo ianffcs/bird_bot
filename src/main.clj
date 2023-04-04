@@ -178,12 +178,13 @@
       #{})))
 
 (defn -main
-  []
+  [{:keys [backup?]}]
   (->> (telegram-fetcher-data! sys)
        (swap! (:telegram-log sys)
               set/union
               (read-backup-data! sys)))
-  (telegram-sender-data! sys)
+  (when-not backup?
+    (telegram-sender-data! sys))
   (dump-local-data! sys))
 
 #_(printf (str/join #"\n"

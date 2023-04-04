@@ -6,4 +6,9 @@ to run add a sys.properties file with the property token as the telegram bot tok
 bb -m main 
 ```
 
+or to not send messages and only update the local bck
+```shell
+bb -m main '{:backup? true}'
+```
+
 Everything is replable in every editor.
