@@ -8,7 +8,7 @@ bb -m main
 
 or to not send messages and only update the local bck
 ```shell
-bb -m main '{:backup? true}'
+bb -x main/-main --dont-send true
 ```
 
 Everything is replable in every editor.

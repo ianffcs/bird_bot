@@ -166,8 +166,8 @@
 
 #_(telegram-fetcher-data! sys)
 #_(dump-local-data! sys)
-#_(->>  (telegram-fetcher-data! sys)
-        (sort-by :update_id))
+#_(->> (telegram-fetcher-data! sys)
+       (sort-by :update_id))
 
 (defn read-backup-data! [sys]
   (let [{:keys [backup-path
@@ -178,14 +178,15 @@
       #{})))
 
 (defn -main
-  [{:keys [backup?]}]
+  [& {:keys [dont-send]}]
   (->> (telegram-fetcher-data! sys)
        (swap! (:telegram-log sys)
               set/union
               (read-backup-data! sys)))
-  (when-not backup?
+  (when-not dont-send
     (telegram-sender-data! sys))
-  (dump-local-data! sys))
+  (dump-local-data! sys)
+  (-> sys :telegram-log deref count println))
 
 #_(printf (str/join #"\n"
                     (repeatedly 5 (fn []
