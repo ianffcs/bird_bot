@@ -188,7 +188,7 @@
   (when-not dont-send
     (telegram-sender-data! sys))
   (dump-local-data! sys)
-  (-> sys :telegram-log deref count println))
+  (-> sys :telegram-log deref count (str " messages on memory") println))
 
 #_(printf (str/join #"\n"
                     (repeatedly 5 (fn []
@@ -211,3 +211,4 @@
                                              repeatedly
                                              (take 100)
                                              rand-nth))))))
+
