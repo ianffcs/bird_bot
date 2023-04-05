@@ -181,6 +181,7 @@
 
 (defn -main
   [& {:keys [dont-send]}]
+  (swap! (:telegram-log sys) (read-backup-data! sys))
   (->> (telegram-fetcher-data! sys)
        (swap! (:telegram-log sys)
               set/union
