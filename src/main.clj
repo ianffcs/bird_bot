@@ -97,6 +97,7 @@
        (partial generate-sentence)
        repeatedly
        (take 100)
+       (filter #(> 900 (count %)))
        rand-nth))
 
 
