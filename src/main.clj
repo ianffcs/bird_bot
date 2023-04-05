@@ -172,8 +172,7 @@
        (sort-by :update_id))
 
 (defn read-backup-data! [sys]
-  (let [{:keys [backup-path
-                telegram-log]} sys]
+  (let [{:keys [backup-path]} sys]
     (if (.exists (File. "my-data.edn"))
       (into #{}
             (edn/read-string (slurp backup-path)))
@@ -181,7 +180,8 @@
 
 (defn -main
   [& {:keys [dont-send]}]
-  (swap! (:telegram-log sys) (read-backup-data! sys))
+  (reset! (:telegram-log sys)
+          (read-backup-data! sys))
   (->> (telegram-fetcher-data! sys)
        (swap! (:telegram-log sys)
               set/union
