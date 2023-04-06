@@ -184,17 +184,22 @@
 
 (defn -main
   [& {:keys [dont-send]}]
+  ;; Add log from file to telegram-log atom
   (reset! (:telegram-log sys)
           (read-backup-data! sys))
+  ;; Update telegram-log
   (->> (telegram-fetcher-data! sys)
        (swap! (:telegram-log sys)
               set/union
               (read-backup-data! sys)))
+  ;; Send message
   (when-not dont-send
     (->> sys
          ->message-request
          (telegram-sender-data! sys)))
+  ;; Dump telegram-log to file
   (dump-local-data! sys)
+  ;; Print amount of messages in telegram-log
   (-> sys
       :telegram-log
       deref
