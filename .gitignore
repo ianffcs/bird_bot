@@ -4,4 +4,6 @@ sys.properties
 .clj-kondo/*
 .idea/*
 .nrepl-port
-bird_bot.iml
+*.iml
+.run/
+target/

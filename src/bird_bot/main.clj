@@ -1,4 +1,5 @@
-(ns main
+(ns bird-bot.main
+  (:gen-class)
   (:require [clojure.data.json :as json]
             [clojure.string :as str]
             [clojure.java.io :as jio]
@@ -38,19 +39,19 @@
       (.load props reader)
       (into {} (for [[k v] props] [(keyword k) (read-string v)])))))
 
-(defonce sys
-  (merge
-    (load-props "sys.properties")
-    {:chat-id      -1001146934165
-     ;;;"message_thread_id"
-     :chat-rooms   {:programar 29
-                    :musica    278
-                    #_#_:receitas ""
-                    #_#_:filosofias-politica ""
-                    #_#_:shitpost ""
-                    #_#_:plano-real ""}
-     :backup-path  "my-data.edn"
-     :telegram-log (atom #{})}))
+(defonce *sys
+  (delay (merge
+           (load-props "sys.properties")
+           {:chat-id      -1001146934165
+            ;;;"message_thread_id"
+            :chat-rooms   {:programar 29
+                           :musica    278
+                           #_#_:receitas ""
+                           #_#_:filosofias-politica ""
+                           #_#_:shitpost ""
+                           #_#_:plano-real ""}
+            :backup-path  "my-data.edn"
+            :telegram-log (atom #{})})))
 
 (defn build-dict [words]
   (reduce (fn [dict, [current-word next-word]]
@@ -112,7 +113,7 @@
                     (-> (str "https:"
                              "//api.telegram.org"
                              "/bot"
-                             (:token sys)
+                             (:token @*sys)
                              "/getUpdates"
                              (when offset-num
                                (str "?offset=" offset-num)))
@@ -131,7 +132,7 @@
   [{:keys [telegram-log
            chat-id
            token]}]
-  (let [rand-room (-> sys
+  (let [rand-room (-> @*sys
                       :chat-rooms
                       vals
                       (conj nil)
@@ -167,9 +168,9 @@
                                      (= 624742737)))
                         vec)))))
 
-#_(telegram-fetcher-data! sys)
-#_(dump-local-data! sys)
-#_(->> (telegram-fetcher-data! sys)
+#_(telegram-fetcher-data! @*sys)
+#_(dump-local-data! @*sys)
+#_(->> (telegram-fetcher-data! @*sys)
        (sort-by :update_id))
 
 (defn read-backup-data! [sys]
@@ -181,16 +182,16 @@
 
 (defn -main
   [& {:keys [dont-send]}]
-  (reset! (:telegram-log sys)
-          (read-backup-data! sys))
-  (->> (telegram-fetcher-data! sys)
-       (swap! (:telegram-log sys)
+  (reset! (:telegram-log @*sys)
+          (read-backup-data! @*sys))
+  (->> (telegram-fetcher-data! @*sys)
+       (swap! (:telegram-log @*sys)
               set/union
-              (read-backup-data! sys)))
+              (read-backup-data! @*sys)))
   (when-not dont-send
-    (telegram-sender-data! sys))
-  (dump-local-data! sys)
-  (-> sys :telegram-log deref count (str " messages on memory") println))
+    (telegram-sender-data! @*sys))
+  (dump-local-data! @*sys)
+  (-> @*sys :telegram-log deref count (str " messages on memory") println))
 
 #_(printf (str/join #"\n"
                     (repeatedly 5 (fn []
