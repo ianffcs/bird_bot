@@ -196,6 +196,7 @@
   (when-not dont-send
     (->> sys
          ->message-request
+         (#(doto % clojure.pprint/pprint))
          (telegram-sender-data! sys)))
   ;; Dump telegram-log to file
   (dump-local-data! sys)
