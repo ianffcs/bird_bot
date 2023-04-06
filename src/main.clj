@@ -130,9 +130,9 @@
 (defn telegram-sender-data!
   [{:keys [telegram-log
            chat-id
+           chat-rooms
            token]}]
-  (let [rand-room (-> sys
-                      :chat-rooms
+  (let [rand-room (-> chat-rooms
                       vals
                       (conj nil)
                       rand-nth)
@@ -190,7 +190,12 @@
   (when-not dont-send
     (telegram-sender-data! sys))
   (dump-local-data! sys)
-  (-> sys :telegram-log deref count (str " messages on memory") println))
+  (-> sys
+      :telegram-log
+      deref
+      count
+      (str " messages on memory")
+      println))
 
 #_(printf (str/join #"\n"
                     (repeatedly 5 (fn []
