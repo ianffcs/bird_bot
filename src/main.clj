@@ -127,20 +127,23 @@
                        (into #{})))]
     tg-data))
 
-(defn telegram-sender-data!
+(defn ->message-request
   [{:keys [telegram-log
            chat-id
-           chat-rooms
-           token]}]
+           chat-rooms]}]
   (let [rand-room (-> chat-rooms
                       vals
                       (conj nil)
-                      rand-nth)
-        request-map (assoc-some {"chat_id" chat-id
-                                 "text"    (random-generated-text @telegram-log)}
-                                "rand-room"
-                                rand-room)
-        resp (.send (HttpClient/newHttpClient)
+                      rand-nth)]
+    (assoc-some {"chat_id" chat-id
+                 "text"    (random-generated-text @telegram-log)}
+                "rand-room"
+                rand-room)))
+
+(defn telegram-sender-data!
+  [{:keys [token]}
+   message-request]
+  (let [resp (.send (HttpClient/newHttpClient)
                     (-> (str "https://api.telegram.org/"
                              "bot"
                              token
@@ -148,7 +151,7 @@
                         (URI/create)
                         (HttpRequest/newBuilder)
                         (.header "Content-Type" "application/json")
-                        (.POST (->> request-map
+                        (.POST (->> message-request
                                     json/write-str
                                     (HttpRequest$BodyPublishers/ofString)))
                         (.build))
@@ -188,7 +191,9 @@
               set/union
               (read-backup-data! sys)))
   (when-not dont-send
-    (telegram-sender-data! sys))
+    (->> sys
+         ->message-request
+         (telegram-sender-data! sys)))
   (dump-local-data! sys)
   (-> sys
       :telegram-log
