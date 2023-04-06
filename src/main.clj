@@ -45,8 +45,8 @@
      ;;;"message_thread_id"
      :chat-rooms   {:programar 29
                     :musica    278
+                    :filosofias-politica 39
                     #_#_:receitas ""
-                    #_#_:filosofias-politica ""
                     #_#_:shitpost ""
                     #_#_:plano-real ""}
      :backup-path  "my-data.edn"
@@ -137,7 +137,7 @@
                       rand-nth)]
     (assoc-some {"chat_id" chat-id
                  "text"    (random-generated-text @telegram-log)}
-                "rand-room"
+                "message_thread_id"
                 rand-room)))
 
 (defn telegram-sender-data!
