@@ -98,6 +98,7 @@
        repeatedly
        (take 100)
        (filter #(> 900 (count %)))
+       (remove #(str/includes? % "https:"))
        rand-nth))
 
 
